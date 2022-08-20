@@ -50,16 +50,34 @@ def get_s3_data(context):
     return output
 
 
-@op
-def process_data():
+## Data Contract ->
+# Input = Stocks data of type List
+# Ouput = Custom data type Aggregation with greatest `high` & corresponding `date`
+@op(
+    ins={"stocks" : In(dagster_type=List[Stock])},
+    out={"aggregation": Out(dagster_type=Aggregation)},
+    description="Given a list of stocks return the Aggregation with the greatest price",
+)
+def process_data(stocks):
+    highest_stock = max(stocks, key=lambda s:s.high)  # find max stock using `high` attribute of each element
+    return Aggregation(date=highest_stock.date, high=highest_stock.high)
+
+
+## Data Contract ->
+# Input = highest stock price of type Aggregation
+# Output = Nothing 
+@op( 
+    ins={"aggregation": In(dagster_type=Aggregation)},
+    out=Out(dagster_type=Nothing),
+    tags={"kind":"redis"},
+    description="Upload an Aggregation to Redis",
+)
+def put_redis_data(aggregation):
     pass
 
-
-@op
-def put_redis_data():
-    pass
-
-
+## DAG dependencies
 @job
 def week_1_pipeline():
-    pass
+    A = get_s3_data()
+    B = process_data(A)
+    C = put_redis_data(B)
