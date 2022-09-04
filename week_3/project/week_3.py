@@ -155,7 +155,7 @@ def docker_week_3_sensor(context):
     new_files = get_s3_keys(
         bucket="dagster",
         prefix="prefix",
-        endpoint_url="http://host.docker.internal:4566/"
+        endpoint_url="http://localstack:4566"
     )
     if not new_files:
         yield SkipReason("No new s3 files found in bucket.")
@@ -170,7 +170,7 @@ def docker_week_3_sensor(context):
                             "bucket": "dagster",
                             "access_key": "test",
                             "secret_key": "test",
-                            "endpoint_url": "http://host.docker.internal:4566" 
+                            "endpoint_url": "http://localstack:4566" 
                         }
                     },
                     "redis": {
